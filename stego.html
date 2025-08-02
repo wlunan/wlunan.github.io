@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图像隐写术工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .upload-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .upload-box {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: rgba(102, 126, 234, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-box:hover {
+            border-color: #764ba2;
+            background: rgba(118, 75, 162, 0.1);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .upload-box h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .upload-box input[type="file"] {
+            display: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .preview-img {
+            max-width: 100%;
+            max-height: 200px;
+            margin-top: 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .preview-img:hover {
+            transform: scale(1.05);
+        }
+
+        .controls {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .process-btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+        }
+
+        .process-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(76, 175, 80, 0.3);
+        }
+
+        .process-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .result-section {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .result-img {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin: 20px 0;
+            transition: transform 0.3s ease;
+        }
+
+        .result-img:hover {
+            transform: scale(1.02);
+        }
+
+        .download-btn {
+            background: linear-gradient(45deg, #FF6B6B, #ee5a52);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .info {
+            background: rgba(102, 126, 234, 0.1);
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .upload-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖼️ 图像隐写术工具</h1>
+        
+        <div class="info">
+            <strong>使用说明：</strong>
+            <br><strong>隐藏图像：</strong>上传封面图片（Cover）和秘密图片（Secret），点击"隐藏图像"将秘密图片隐藏到封面图片中。
+            <br><strong>提取图像：</strong>上传任何可能包含隐藏图像的图片到封面或秘密图片位置，点击"提取隐藏图像"尝试提取隐藏内容。
+            <br>本工具使用改进的LSB算法，隐藏后的图像在视觉上与原图完全一致。
+        </div>
+
+        <div class="upload-section">
+            <div class="upload-box">
+                <h3>📷 封面图片 (Cover)</h3>
+                <p>选择要用作封面的图片</p>
+                <input type="file" id="coverInput" accept="image/*">
+                <button class="upload-btn" onclick="document.getElementById('coverInput').click()">
+                    选择封面图片
+                </button>
+                <div id="coverPreview"></div>
+            </div>
+
+            <div class="upload-box">
+                <h3>🔒 秘密图片 (Secret)</h3>
+                <p>选择要隐藏的秘密图片</p>
+                <input type="file" id="secretInput" accept="image/*">
+                <button class="upload-btn" onclick="document.getElementById('secretInput').click()">
+                    选择秘密图片
+                </button>
+                <div id="secretPreview"></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="process-btn" id="hideBtn" onclick="hideImage()" disabled>
+                🔐 隐藏图像
+            </button>
+            <button class="process-btn" id="extractBtn" onclick="extractImage()" disabled>
+                🔍 提取隐藏图像
+            </button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>正在处理图像...</p>
+        </div>
+
+        <div class="result-section" id="resultSection" style="display: none;">
+            <h3>处理结果</h3>
+            <canvas id="resultCanvas" class="result-img"></canvas>
+            <br>
+            <a class="download-btn" id="downloadBtn" download="steganography_result.png">
+                💾 下载结果
+            </a>
+        </div>
+    </div>
+
+    <script>
+        let coverImage = null;
+        let secretImage = null;
+        let stegoImage = null;
+
+        // 处理图片上传
+        document.getElementById('coverInput').addEventListener('change', function(e) {
+            handleImageUpload(e, 'cover');
+        });
+
+        document.getElementById('secretInput').addEventListener('change', function(e) {
+            handleImageUpload(e, 'secret');
+        });
+
+        function handleImageUpload(event, type) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    if (type === 'cover') {
+                        coverImage = img;
+                        displayPreview(img, 'coverPreview');
+                    } else {
+                        secretImage = img;
+                        displayPreview(img, 'secretPreview');
+                    }
+                    updateButtons();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function displayPreview(img, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            const previewImg = img.cloneNode();
+            previewImg.className = 'preview-img';
+            container.appendChild(previewImg);
+        }
+
+        function updateButtons() {
+            const hideBtn = document.getElementById('hideBtn');
+            const extractBtn = document.getElementById('extractBtn');
+            
+            hideBtn.disabled = !(coverImage && secretImage);
+            // 提取按钮：只要有任何图像就可以尝试提取
+            extractBtn.disabled = !(coverImage || secretImage || stegoImage);
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function showResult(canvas) {
+            const resultSection = document.getElementById('resultSection');
+            resultSection.style.display = 'block';
+            resultSection.scrollIntoView({ behavior: 'smooth' });
+            
+            // 设置下载链接
+            const downloadBtn = document.getElementById('downloadBtn');
+            downloadBtn.href = canvas.toDataURL();
+        }
+
+        // 改进的LSB隐写算法 - 隐藏图像（视觉上不可见）
+        function hideImage() {
+            if (!coverImage || !secretImage) return;
+
+            showLoading(true);
+
+            setTimeout(() => {
+                const canvas = document.getElementById('resultCanvas');
+                const ctx = canvas.getContext('2d');
+
+                // 设置画布大小为封面图片大小
+                canvas.width = coverImage.width;
+                canvas.height = coverImage.height;
+
+                // 绘制封面图片
+                ctx.drawImage(coverImage, 0, 0);
+                const coverData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+                // 创建临时画布处理秘密图片（保持原始尺寸，不缩放）
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCanvas.width = secretImage.width;
+                tempCanvas.height = secretImage.height;
+
+                // 绘制秘密图片（原始尺寸）
+                tempCtx.drawImage(secretImage, 0, 0);
+                const secretData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+
+                // 改进的LSB隐写：只使用最低2位，减少视觉影响
+                // 首先存储秘密图像的尺寸信息
+                const secretWidth = secretImage.width;
+                const secretHeight = secretImage.height;
+                
+                // 将尺寸信息编码到前几个像素中
+                coverData.data[0] = (coverData.data[0] & 0xFC) | ((secretWidth >> 14) & 0x03);
+                coverData.data[1] = (coverData.data[1] & 0xFC) | ((secretWidth >> 12) & 0x03);
+                coverData.data[2] = (coverData.data[2] & 0xFC) | ((secretWidth >> 10) & 0x03);
+                coverData.data[4] = (coverData.data[4] & 0xFC) | ((secretWidth >> 8) & 0x03);
+                coverData.data[5] = (coverData.data[5] & 0xFC) | ((secretWidth >> 6) & 0x03);
+                coverData.data[6] = (coverData.data[6] & 0xFC) | ((secretWidth >> 4) & 0x03);
+                coverData.data[8] = (coverData.data[8] & 0xFC) | ((secretWidth >> 2) & 0x03);
+                coverData.data[9] = (coverData.data[9] & 0xFC) | (secretWidth & 0x03);
+                
+                coverData.data[10] = (coverData.data[10] & 0xFC) | ((secretHeight >> 14) & 0x03);
+                coverData.data[12] = (coverData.data[12] & 0xFC) | ((secretHeight >> 12) & 0x03);
+                coverData.data[13] = (coverData.data[13] & 0xFC) | ((secretHeight >> 10) & 0x03);
+                coverData.data[14] = (coverData.data[14] & 0xFC) | ((secretHeight >> 8) & 0x03);
+                coverData.data[16] = (coverData.data[16] & 0xFC) | ((secretHeight >> 6) & 0x03);
+                coverData.data[17] = (coverData.data[17] & 0xFC) | ((secretHeight >> 4) & 0x03);
+                coverData.data[18] = (coverData.data[18] & 0xFC) | ((secretHeight >> 2) & 0x03);
+                coverData.data[20] = (coverData.data[20] & 0xFC) | (secretHeight & 0x03);
+
+                // 检查封面图片容量是否足够
+                const availableCapacity = (coverData.data.length - 100) / 3; // 每3个字节存储1个RGB像素
+                const requiredCapacity = secretData.data.length / 4 * 3; // 秘密图像需要的容量
+                
+                if (requiredCapacity > availableCapacity) {
+                    alert(`封面图片容量不足！需要 ${Math.ceil(requiredCapacity)} 字节，可用 ${Math.floor(availableCapacity)} 字节。请使用更大的封面图片或更小的秘密图片。`);
+                    showLoading(false);
+                    return;
+                }
+
+                // 简化的LSB隐写：只使用最低2位
+                let dataIndex = 0;
+                const startPixel = 24; // 跳过存储尺寸信息的像素
+                
+                // 逐个处理秘密图像的像素
+                for (let i = 0; i < secretData.data.length; i += 4) {
+                    // 处理RGB通道（跳过Alpha）
+                    for (let j = 0; j < 3; j++) {
+                        const coverIndex = startPixel + dataIndex;
+                        if (coverIndex >= coverData.data.length) break;
+                        
+                        // 清除封面图片像素的最低2位
+                        coverData.data[coverIndex] = (coverData.data[coverIndex] & 0xFC);
+                        
+                        // 将秘密图片像素的最高2位嵌入到封面图片的最低2位
+                        const secretBits = (secretData.data[i + j] >> 6) & 0x03;
+                        coverData.data[coverIndex] |= secretBits;
+                        
+                        dataIndex++;
+                    }
+                }
+
+                // 添加数据长度标记
+                const dataLength = secretData.data.length / 4 * 3; // RGB数据长度
+                const endMarkerStart = startPixel + dataLength;
+                if (endMarkerStart + 4 < coverData.data.length) {
+                    // 标记数据结束位置
+                    coverData.data[endMarkerStart] = (coverData.data[endMarkerStart] & 0xFC) | 0x03;
+                    coverData.data[endMarkerStart + 1] = (coverData.data[endMarkerStart + 1] & 0xFC) | 0x01;
+                    coverData.data[endMarkerStart + 2] = (coverData.data[endMarkerStart + 2] & 0xFC) | 0x02;
+                    coverData.data[endMarkerStart + 3] = (coverData.data[endMarkerStart + 3] & 0xFC) | 0x00;
+                }
+
+                ctx.putImageData(coverData, 0, 0);
+                stegoImage = canvas;
+                
+                showLoading(false);
+                showResult(canvas);
+                updateButtons();
+            }, 100);
+        }
+
+        // 改进的LSB隐写算法 - 提取图像
+        function extractImage() {
+            // 确定要提取的图像源
+            let sourceImage = null;
+            let sourceCanvas = null;
+            let sourceCtx = null;
+            
+            if (stegoImage) {
+                // 如果有隐写结果图像，优先使用
+                sourceCanvas = stegoImage;
+                sourceCtx = sourceCanvas.getContext('2d');
+            } else if (coverImage) {
+                // 否则尝试从封面图像提取
+                sourceCanvas = document.createElement('canvas');
+                sourceCtx = sourceCanvas.getContext('2d');
+                sourceCanvas.width = coverImage.width;
+                sourceCanvas.height = coverImage.height;
+                sourceCtx.drawImage(coverImage, 0, 0);
+            } else if (secretImage) {
+                // 最后尝试从秘密图像提取（虽然这通常没意义）
+                sourceCanvas = document.createElement('canvas');
+                sourceCtx = sourceCanvas.getContext('2d');
+                sourceCanvas.width = secretImage.width;
+                sourceCanvas.height = secretImage.height;
+                sourceCtx.drawImage(secretImage, 0, 0);
+            } else {
+                alert('请先上传要提取的图像！');
+                return;
+            }
+
+            showLoading(true);
+
+            setTimeout(() => {
+                const canvas = document.getElementById('resultCanvas');
+                const ctx = canvas.getContext('2d');
+
+                // 获取源图像数据
+                const stegoData = sourceCtx.getImageData(0, 0, sourceCanvas.width, sourceCanvas.height);
+
+                // 提取尺寸信息
+                let secretWidth = 0;
+                let secretHeight = 0;
+                
+                secretWidth |= ((stegoData.data[0] & 0x03) << 14);
+                secretWidth |= ((stegoData.data[1] & 0x03) << 12);
+                secretWidth |= ((stegoData.data[2] & 0x03) << 10);
+                secretWidth |= ((stegoData.data[4] & 0x03) << 8);
+                secretWidth |= ((stegoData.data[5] & 0x03) << 6);
+                secretWidth |= ((stegoData.data[6] & 0x03) << 4);
+                secretWidth |= ((stegoData.data[8] & 0x03) << 2);
+                secretWidth |= (stegoData.data[9] & 0x03);
+                
+                secretHeight |= ((stegoData.data[10] & 0x03) << 14);
+                secretHeight |= ((stegoData.data[12] & 0x03) << 12);
+                secretHeight |= ((stegoData.data[13] & 0x03) << 10);
+                secretHeight |= ((stegoData.data[14] & 0x03) << 8);
+                secretHeight |= ((stegoData.data[16] & 0x03) << 6);
+                secretHeight |= ((stegoData.data[17] & 0x03) << 4);
+                secretHeight |= ((stegoData.data[18] & 0x03) << 2);
+                secretHeight |= (stegoData.data[20] & 0x03);
+
+                // 验证尺寸合理性
+                if (secretWidth <= 0 || secretHeight <= 0 || 
+                    secretWidth > 10000 || secretHeight > 10000) {
+                    alert('未检测到有效的隐藏图像！');
+                    showLoading(false);
+                    return;
+                }
+
+                console.log('提取的尺寸:', secretWidth, 'x', secretHeight);
+
+                // 检查结束标记来验证数据完整性
+                const expectedDataLength = secretWidth * secretHeight * 3; // RGB数据长度
+                const endMarkerStart = 24 + expectedDataLength;
+                
+                if (endMarkerStart + 4 < stegoData.data.length) {
+                    const marker1 = stegoData.data[endMarkerStart] & 0x03;
+                    const marker2 = stegoData.data[endMarkerStart + 1] & 0x03;
+                    const marker3 = stegoData.data[endMarkerStart + 2] & 0x03;
+                    const marker4 = stegoData.data[endMarkerStart + 3] & 0x03;
+                    
+                    if (!(marker1 === 3 && marker2 === 1 && marker3 === 2 && marker4 === 0)) {
+                        console.warn('数据完整性检查失败，但继续提取...');
+                    }
+                }
+
+                // 创建输出画布
+                canvas.width = secretWidth;
+                canvas.height = secretHeight;
+                const extractedData = ctx.createImageData(secretWidth, secretHeight);
+
+                // 提取秘密图像数据
+                const startPixel = 24; // 跳过存储尺寸信息的像素
+                let dataIndex = 0;
+                
+                // 按像素提取数据
+                for (let i = 0; i < extractedData.data.length; i += 4) {
+                    // 处理RGB通道
+                    for (let j = 0; j < 3; j++) {
+                        const coverIndex = startPixel + dataIndex;
+                        if (coverIndex >= stegoData.data.length) {
+                            extractedData.data[i + j] = 0;
+                        } else {
+                            // 提取最低2位（这是原始图像的最高2位）
+                            const hiddenBits = stegoData.data[coverIndex] & 0x03;
+                            
+                            // 将提取的2位恢复到8位值
+                            // 使用位复制来增强对比度：将2位扩展为8位
+                            extractedData.data[i + j] = (hiddenBits << 6) | (hiddenBits << 4) | (hiddenBits << 2) | hiddenBits;
+                        }
+                        dataIndex++;
+                    }
+                    // Alpha通道设为255（不透明）
+                    extractedData.data[i + 3] = 255;
+                }
+
+                ctx.putImageData(extractedData, 0, 0);
+                
+                showLoading(false);
+                showResult(canvas);
+            }, 100);
+        }
+    </script>
+</body>
+</html>
